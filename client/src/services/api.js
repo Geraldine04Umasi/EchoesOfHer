@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/stories";
+const API_URL = import.meta.env.VITE_API_URL + "/stories";
 
 export const getStories = async () => {
   const response = await fetch(API_URL);

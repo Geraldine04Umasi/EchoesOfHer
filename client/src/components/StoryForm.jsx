@@ -22,7 +22,7 @@ function StoryForm({ onStoryCreated }) {
 
   const submitStory = async (storyData) => {
     try {
-      const res = await fetch("http://localhost:5000/stories", {
+      const res =  await fetch(import.meta.env.VITE_API_URL + "/stories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storyData),
@@ -45,7 +45,7 @@ function StoryForm({ onStoryCreated }) {
     if (!acceptedGuidelines) return;
     setIsChecking(true);
     try {
-      const checkRes = await fetch("http://localhost:5000/stories/check", {
+      const checkRes = await fetch(import.meta.env.VITE_API_URL + "/stories/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, content }),
