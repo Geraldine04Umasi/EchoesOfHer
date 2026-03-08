@@ -12,7 +12,12 @@ const openai = new OpenAI({
   baseURL: "https://api.groq.com/openai/v1" 
 });
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://echoes-of-her.vercel.app" 
+  ]
+}));
 app.use(express.json());
 
 //Conexión a MongoDB
