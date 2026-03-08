@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import StoryForm from "../components/StoryForm";
 import StoryList from "../components/StoryList";
-import { getStories, createStory } from "../services/api";
+import { getStories } from "../services/api";
 
 function Stories() {
   const [stories, setStories] = useState([]);
@@ -20,13 +20,8 @@ function Stories() {
     fetchStories();
   }, []);
 
-  const handleNewStory = async (story) => {
-    try {
-      await createStory(story);
-      fetchStories();
-    } catch (error) {
-      console.error(error);
-    }
+  const handleNewStory = () => {
+    fetchStories();
   };
 
   const filteredStories =

@@ -28,8 +28,23 @@ const storySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    flagged: {
+      type: Boolean,
+      default: false,
+    },
+
+    flagReason: {
+      type: String,
+      default: null,
+    },
+    
+    aiResponse: {
+      type: String,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Story", storySchema);
