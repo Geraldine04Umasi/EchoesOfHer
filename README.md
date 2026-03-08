@@ -49,7 +49,7 @@
 **Backend:**
 - Node.js + Express
 - MongoDB + Mongoose
-- Groq API (LLaMA 3.3 70B) para moderación y mensajes de apoyo
+- Groq API (openai/gpt-oss-120b) para moderación y mensajes de apoyo
 
 **Deploy:**
 - Frontend → Vercel
