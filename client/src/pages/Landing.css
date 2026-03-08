@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap');
+
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+@keyframes riseAndFade {
+  0%   { transform: translateY(0px) rotate(0deg) scale(1); opacity: var(--start-op); }
+  20%  { opacity: calc(var(--start-op) * 1.6); }
+  100% { transform: translateY(-110vh) rotate(15deg) scale(0.7); opacity: 0; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes imageFloat {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%      { transform: translateY(-16px) rotate(1deg); }
+}
+
+@keyframes badgePop {
+  from { opacity: 0; transform: translateY(16px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.hero-title { opacity: 0; }
+.hero-title.visible {
+  animation: fadeSlideUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-btn { opacity: 0; }
+.hero-btn.visible {
+  animation: scaleIn 1.9s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+.badge-anim { animation: badgePop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+.stat-anim  { animation: fadeSlideUp 0.7s ease 0.2s both; }
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: #A855F7;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.8s step-end infinite;
+}
+
+.hero-image { animation: imageFloat 7s ease-in-out infinite; }
+
+.cta-btn {
+  background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
+  transition: transform 0.22s, box-shadow 0.22s;
+  box-shadow: 0 6px 24px rgba(168,85,247,0.3);
+}
+.cta-btn:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 16px 40px rgba(168,85,247,0.45);
+}

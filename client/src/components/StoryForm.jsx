@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import EmojiPicker from "emoji-picker-react";
 import { Link } from "react-router-dom";
 import { Smile } from "lucide-react";
+import "./StoryForm.css";
 
 function StoryForm({ onStoryCreated }) {
   const [title, setTitle] = useState("");
@@ -9,17 +10,16 @@ function StoryForm({ onStoryCreated }) {
   const [category, setCategory] = useState("discrimination");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [acceptedGuidelines, setAcceptedGuidelines] = useState(false);
-  const [moderation, setModeration] = useState(null); // { flagged, reason }
+  const [moderation, setModeration] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   const pickerRef = useRef(null);
 
-  // Manejo de emojis
   const handleEmojiClick = (emojiData) => {
     setContent((prev) => prev + emojiData.emoji);
   };
 
-  // Función central para enviar la historia al backend
   const submitStory = async (storyData) => {
     try {
       const res = await fetch("http://localhost:5000/stories", {
@@ -27,11 +27,8 @@ function StoryForm({ onStoryCreated }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storyData),
       });
-
       const savedStory = await res.json();
       if (onStoryCreated) onStoryCreated(savedStory);
-
-      // Limpiar formulario
       setTitle("");
       setContent("");
       setCategory("discrimination");
@@ -43,104 +40,70 @@ function StoryForm({ onStoryCreated }) {
     }
   };
 
-  // Manejo de submit principal
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!acceptedGuidelines) {
-      alert("You must accept the guidelines before submitting your story.");
-      return;
-    }
-
+    if (!acceptedGuidelines) return;
+    setIsChecking(true);
     try {
-      // 1️⃣ Enviar a IA para moderación
       const checkRes = await fetch("http://localhost:5000/stories/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, content }),
       });
       const checkData = await checkRes.json();
-
       if (checkData.flagged) {
         setModeration(checkData);
-        setShowWarning(true); // muestra la advertencia
-        return; // no publica aún
+        setShowWarning(true);
+        return;
       }
-
-      // 2️⃣ Publicar si no hay problema
-      await submitStory({
-        title,
-        content,
-        category,
-        flagged: false,
-        flagReason: null,
-        aiResponse: null,
-        acceptedGuidelines: true,
-      });
+      await submitStory({ title, content, category, flagged: false, flagReason: null, aiResponse: null });
     } catch (error) {
       console.error("Moderation error:", error);
-      alert("There was an error checking your story. Please try again.");
+    } finally {
+      setIsChecking(false);
     }
   };
 
-  // Publish anyway si usuario ignora advertencia
   const handlePublishAnyway = async () => {
     if (!moderation) return;
-
-    await submitStory({
-      title,
-      content,
-      category,
-      flagged: true,
-      flagReason: moderation.reason,
-      aiResponse: null,
-      acceptedGuidelines: true,
-    });
+    await submitStory({ title, content, category, flagged: true, flagReason: moderation.reason, aiResponse: null });
   };
 
-  // Editar historia después de advertencia
-  const handleEditStory = () => {
-    setShowWarning(false);
-  };
+  const handleEditStory = () => setShowWarning(false);
 
-  // Cerrar picker si clic afuera
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
         setShowEmojiPicker(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="story-form space-y-5">
+
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Title
-        </label>
+        <label className="form-label">Title</label>
         <input
           type="text"
           placeholder="Give your story a title..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          className="form-input"
         />
       </div>
 
       {/* Category */}
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Category
-        </label>
+        <label className="form-label">Category</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          className="form-select"
         >
           <option value="discrimination">Discrimination</option>
           <option value="career_growth">Career Growth</option>
@@ -150,101 +113,74 @@ function StoryForm({ onStoryCreated }) {
         </select>
       </div>
 
-      {/* Story textarea */}
-      <div className="relative">
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Your Story
-        </label>
-
+      {/* Textarea */}
+      <div style={{ position: "relative" }}>
+        <label className="form-label">Your Story</label>
         <textarea
           placeholder="Share your experience in tech..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
-          rows="4"
-          className="w-full p-3 pr-12 pb-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition resize-none"
+          rows="5"
+          className="form-textarea"
         />
-
-        {/* Emoji Button */}
         <button
           type="button"
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="absolute bottom-3 right-3 text-gray-400 hover:text-purple-600 hover:scale-110 transition"
+          className="emoji-btn"
         >
           <Smile size={20} />
         </button>
-
-        {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div ref={pickerRef} className="absolute bottom-12 right-0 z-10">
+          <div ref={pickerRef} style={{ position: "absolute", bottom: "56px", right: 0, zIndex: 10 }}>
             <EmojiPicker onEmojiClick={handleEmojiClick} />
           </div>
         )}
       </div>
 
-      {/* Guidelines checkbox */}
-      <div className="flex items-start gap-2 text-sm text-gray-600">
+      {/* Checkbox */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         <input
           type="checkbox"
           checked={acceptedGuidelines}
           onChange={(e) => setAcceptedGuidelines(e.target.checked)}
-          className="mt-1 accent-purple-600 cursor-pointer"
+          style={{ marginTop: 3, accentColor: "#A855F7", cursor: "pointer", width: 15, height: 15, flexShrink: 0 }}
         />
-        <p>
+        <p className="checkbox-label">
           I confirm that my story follows the{" "}
-          <Link
-            to="/guidelines"
-            className="text-purple-600 font-medium hover:underline"
-          >
-            community guidelines
-          </Link>{" "}
+          <Link to="/guidelines">community guidelines</Link>{" "}
           and does not contain offensive or harmful content.
         </p>
       </div>
 
       {/* Submit */}
       <button
-        type="submit"
-        disabled={!acceptedGuidelines}
-        className={`w-full py-3 rounded-xl shadow-md transition duration-300
-        ${
-          acceptedGuidelines
-            ? "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
+        onClick={handleSubmit}
+        disabled={!acceptedGuidelines || isChecking}
+        className={`submit-btn ${acceptedGuidelines && !isChecking ? "enabled" : "disabled"}`}
       >
-        Submit Story
+        {isChecking ? "Checking your story..." : "Submit Story"}
       </button>
 
       {/* Moderation warning */}
       {showWarning && moderation && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mt-4">
-          <p className="font-semibold text-yellow-800 mb-2">
-            ⚠️ Before publishing
-          </p>
-          <p className="text-yellow-700 mb-2">
+        <div className="warning-box">
+          <p className="warning-title">✦ Before publishing</p>
+          <p className="warning-text">
             Our AI detected that your story might include sensitive content.
           </p>
-          <p className="text-yellow-700 mb-4">Reason: {moderation.reason}</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleEditStory}
-              className="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition"
-            >
-              Edit Story
+          <p className="warning-reason">"{moderation.reason}"</p>
+          <div className="warning-actions">
+            <button type="button" onClick={handleEditStory} className="btn-edit">
+              ✎ Edit Story
             </button>
-            <button
-              type="button"
-              onClick={handlePublishAnyway}
-              className="bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              Publish Anyway
+            <button type="button" onClick={handlePublishAnyway} className="btn-publish-anyway">
+              Publish Anyway →
             </button>
           </div>
         </div>
       )}
-    </form>
+    </div>
   );
 }
 
