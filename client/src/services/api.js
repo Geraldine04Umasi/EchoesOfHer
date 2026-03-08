@@ -28,3 +28,11 @@ export const likeStory = async (id) => {
 
   return res.json();
 };
+
+export const getAiSupport = async (id) => {
+  const res = await fetch(`${API_URL}/${id}/ai-support`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Error getting AI support");
+  return res.json();
+};

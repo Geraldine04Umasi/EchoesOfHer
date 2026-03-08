@@ -115,6 +115,48 @@ app.patch("/stories/:id/like", async (req, res) => {
   }
 });
 
+// Endpoint AI Support Message
+app.post("/stories/:id/ai-support", async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+    if (!story) return res.status(404).json({ error: "Story not found" });
+
+    const completion = await openai.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `You are a warm and empathetic AI companion on a platform where women share their experiences in tech.
+          
+Your job is to read a story and write a short, heartfelt message of support and encouragement (2-3 sentences max).
+- Be genuine, warm and empathetic
+- Acknowledge their experience specifically
+- End with an empowering message
+- Write in the same language as the story (Spanish or English)
+- Do NOT use generic phrases like "Thank you for sharing"
+- Respond ONLY with the support message, no extra text`
+        },
+        {
+          role: "user",
+          content: `Title: ${story.title}\n\nStory: ${story.content}`
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    const aiResponse = completion.choices[0].message.content.trim();
+
+    // Guardar en la historia
+    story.aiResponse = aiResponse;
+    await story.save();
+
+    res.json({ aiResponse });
+  } catch (error) {
+    console.error("AI Support error:", error);
+    res.status(500).json({ error: "Error generating support message" });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
