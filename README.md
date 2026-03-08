@@ -24,6 +24,7 @@
 
 ### 📋 Lineamientos
 ![Guidelines](./screenshots/05-guidelines.png)
+![Guidelines 2](./screenshots/06-guidelines2.png)
 
 ---
 
